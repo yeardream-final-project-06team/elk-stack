@@ -1,0 +1,11 @@
+version: '3.6'
+services:
+  dummy:
+    image: python:3.9
+    volumes:
+      - ./test.py:/test.py
+    command: python3 test.py
+    logging:
+      driver: syslog
+      options:
+        syslog-address: "tcp://host.docker.internal:514"

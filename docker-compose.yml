@@ -1,0 +1,45 @@
+version: '3.6'
+services:
+  elasticsearch:
+    build: ./elasticsearch
+    container_name: elasticsearch
+    environment:
+      discovery.type: single-node
+      bootstrap.memory_lock: true
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65535
+        hard: 65535
+    ports:
+      - '9200:9200'
+      - '9300:9300'
+
+  logstash:
+    image: logstash:7.17.14
+    container_name: logstash
+    depends_on:
+      - elasticsearch
+    ports:
+      - '9600:9600'
+      - '514:514'
+    volumes:
+      - ./logstash/logstash.conf:/logstash_dir/logstash.conf
+    command: logstash -f /logstash_dir/logstash.conf
+
+  kibana:
+    image: kibana:7.17.14
+    container_name: kibana
+    ports:
+      - '5601:5601'
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+
+volumes:
+  elasticsearch_data:
